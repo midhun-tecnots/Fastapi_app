@@ -49,6 +49,7 @@ def cancel_order(order_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{order_id}/items")
 def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = Depends(get_db)):
+    # BUG: No stock validation - allowing orders beyond available inventory
     if quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be positive")
     
@@ -60,9 +61,10 @@ def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = 
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
+    # BUG: Missing stock validation - could allow ordering more than available
+    # BUG: No price validation - using current price instead of price at order time
     
-    
-    total_price = product.price * quantity  
+    total_price = product.price * quantity  # BUG: Using current price, not order-time price
     
     order_item = models.OrderItem(
         order_id=order_id,
@@ -79,15 +81,16 @@ def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = 
 
 @router.get("/{order_id}/details")
 def get_order_details(order_id: int, db: Session = Depends(get_db)):
+    # BUG: No authorization - any user can view any order details
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    
+    # BUG: No access control - exposing customer email and addresses without verification
     return {
         "order_id": order.id,
         "customer_id": order.customer_id,
-        "customer_email": order.customer.email,  
+        "customer_email": order.customer.email,  # BUG: Exposing customer email without authorization
         "shipping_address": order.shipping_address,
         "billing_address": order.billing_address,
         "total_amount": order.total_amount,
