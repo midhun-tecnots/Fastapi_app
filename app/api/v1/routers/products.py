@@ -12,14 +12,12 @@ router = APIRouter(prefix="/products")
 
 @router.post("/", response_model=ProductRead, status_code=201)
 def create_product(payload: ProductBase, db: Session = Depends(get_db)):
-    # BUG: Logic error - should be OR instead of AND
     if payload.price <= 0:
         raise HTTPException(status_code=400, detail="Price must be positive")
     
     category = db.query(models.Category).filter(models.Category.id == payload.category_id).first()
     vendor = db.query(models.User).filter(models.User.id == payload.vendor_id).first()
     
-    # BUG: Incorrect logic - should check if category OR vendor doesn't exist, not both
     if not category and not vendor:
         raise HTTPException(status_code=400, detail="Invalid category or vendor")
     
@@ -51,19 +49,18 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 
 @router.get("/internal/details/{product_id}")
 def get_product_internal_details(product_id: int, db: Session = Depends(get_db)):
-    # BUG: No authentication/authorization - internal endpoint exposed publicly
+    
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    # BUG: Exposing sensitive internal data (cost_price) without proper access control
     return {
         "id": product.id,
         "name": product.name,
         "price": product.price,
         "vendor_id": product.vendor_id,
         "vendor_email": product.vendor.email,  
-        "cost_price": product.cost_price  # BUG: Sensitive internal data exposed
+        "cost_price": product.cost_price  
     }
 
 
