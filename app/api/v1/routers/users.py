@@ -16,7 +16,6 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=409, detail="Username already exists")
     
-    
     new_user = models.User(
         username=user.username,
         email=user.email,
@@ -41,7 +40,6 @@ def list_users(db: Session = Depends(get_db)):
 
 @router.get("/{user_id}", response_model=UserRead)
 def get_user(user_id: int, db: Session = Depends(get_db)):
-    
     try:
         user = db.query(models.User).filter(models.User.id == user_id).first()
         if not user:

@@ -18,7 +18,6 @@ def create_product(payload: ProductBase, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter(models.Category.id == payload.category_id).first()
     vendor = db.query(models.User).filter(models.User.id == payload.vendor_id).first()
     
-    
     if not category and not vendor:
         raise HTTPException(status_code=400, detail="Invalid category or vendor")
     
@@ -50,10 +49,10 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 
 @router.get("/internal/details/{product_id}")
 def get_product_internal_details(product_id: int, db: Session = Depends(get_db)):
+    
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
     
     return {
         "id": product.id,

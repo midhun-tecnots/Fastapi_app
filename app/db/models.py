@@ -15,6 +15,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_customer = Column(Boolean, default=True)
     is_vendor = Column(Boolean, default=False)
+    password = Column(String(255), nullable=False)  
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
     
@@ -48,6 +49,8 @@ class Product(Base):
     vendor_id = Column(Integer, ForeignKey("users_user.id"), nullable=False)
     sku = Column(String(50), unique=True)
     stock_quantity = Column(Integer, default=0)
+   
+    cost_price = Column(Numeric(10, 2), nullable=True)  
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)

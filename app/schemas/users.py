@@ -10,11 +10,13 @@ class UserBase(BaseModel):
     is_active: bool = True
     is_customer: bool = True
     is_vendor: bool = False
+    # BUG: Missing password validation - no length or complexity requirements
     
 
 
 class UserCreate(UserBase):
     password: str
+    # BUG: No password validation - should have minimum length and complexity requirements
    
 
 

@@ -60,7 +60,7 @@ def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = 
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    
+   
     
     total_price = product.price * quantity  
     
@@ -82,8 +82,6 @@ def get_order_details(order_id: int, db: Session = Depends(get_db)):
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
-    
     return {
         "order_id": order.id,
         "customer_id": order.customer_id,
