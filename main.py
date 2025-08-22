@@ -34,5 +34,3 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
-print(create_access_token(1))
-
