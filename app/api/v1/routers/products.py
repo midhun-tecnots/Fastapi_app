@@ -35,7 +35,7 @@ def list_products(db: Session = Depends(get_db)):
     return db.query(models.Product).filter(models.Product.is_active == True).all()
 
 
-@router.get("/{product_id}", response_model=ProductRead)
+@router.get("/product", response_model=ProductRead)
 def get_product(product_id: int, db: Session = Depends(get_db)):
    
     if product_id <= 0:
