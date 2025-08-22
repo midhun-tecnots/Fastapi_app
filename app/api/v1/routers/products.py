@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List
 import json
 
+from app.core.security import verify_access_token
 from app.db.session import get_db
 from app.db import models
-from app.schemas.products import ProductRead, ProductBase
+from app.schemas.products import CategoryCreate, ProductRead, ProductBase
 
 router = APIRouter(prefix="/products")
 
@@ -71,3 +72,18 @@ def search_products(query: str = "", db: Session = Depends(get_db)):
         models.Product.name.contains(query)
     ).all()
     return products
+
+@router.post("/category")
+def add_product_category(payload: CategoryCreate, db: Session = Depends(get_db)):
+    if payload.id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid category ID")
+    
+    category = db.query(models.Category).filter(models.Category.id == payload.id).first()
+    if category:
+        raise HTTPException(status_code=400, detail="category already exists")
+    
+    product = models.Category(**payload.dict())
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    return product

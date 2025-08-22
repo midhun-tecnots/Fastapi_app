@@ -26,6 +26,13 @@ class ProductBase(BaseModel):
     stock_quantity: int = 0
     is_active: bool = True
 
+class CategoryCreate(BaseModel):
+    id: int
+    name : str
+    description: Optional[str] = "" 
+    slug: Optional[str] = None
+    is_active: bool = True
+
 
 class ProductRead(ProductBase):
     id: int
