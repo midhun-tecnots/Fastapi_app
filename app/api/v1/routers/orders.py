@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import uuid
 
+from app.core.security import verify_access_token
 from app.db.session import get_db
 from app.db import models
 from app.schemas.orders import OrderRead, OrderBase
@@ -11,29 +12,40 @@ router = APIRouter(prefix="/orders")
 
 
 @router.post("/", response_model=OrderRead, status_code=201)
-def create_order(payload: OrderBase, db: Session = Depends(get_db)):
-   
-    customer = db.query(models.User).filter(models.User.id == payload.customer_id).first()
+def create_order(payload: OrderBase, user_id : int = Depends(verify_access_token), db_: Session = Depends(get_db)):  # Assuming user_id is passed as a dependency
+    # print('user id :: ',user_id)
+    customer = db_.query(models.User).filter(models.User.id == user_id).first()
+
     if not customer:
         raise HTTPException(status_code=400, detail="Invalid customer")
     
+
+    
     order = models.Order(**payload.dict())
-    db.add(order)
-    db.commit()
-    db.refresh(order)
+    db_.add(order)
+    db_.commit()
+    db_.refresh(order)
     return order
 
 
 @router.get("/", response_model=List[OrderRead])
-def list_orders(db: Session = Depends(get_db)):
-   
-    return db.query(models.Order).order_by(models.Order.created_at.desc()).all()
+def list_orders(db: Session = Depends(get_db), user_id : int = Depends(verify_access_token)):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if not db.query(models.User).filter(models.User.id == user_id).first():
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return db.query(models.Order).filter(models.Order.customer_id == user_id).order_by(models.Order.created_at.desc()).all()
 
 
 
 @router.post("/{order_id}/cancel")
-def cancel_order(order_id: int, db: Session = Depends(get_db)):
-    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+def cancel_order(order_id: int, db: Session = Depends(get_db), user_id : int = Depends(verify_access_token)):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if not db.query(models.User).filter(models.User.id == user_id).first():
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    order = db.query(models.Order).filter(models.Order.customer_id == user_id, 
+                                          models.Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
@@ -48,11 +60,15 @@ def cancel_order(order_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/{order_id}/items")
-def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = Depends(get_db)):
+def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = Depends(get_db), user_id : int = Depends(verify_access_token)):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if not db.query(models.User).filter(models.User.id == user_id).first():
+        raise HTTPException(status_code=401, detail="Unauthorized")
     if quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be positive")
     
-    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    order = db.query(models.Order).filter(models.Order.customer_id == user_id, models.Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
@@ -78,8 +94,12 @@ def add_order_item(order_id: int, product_id: int, quantity: int, db: Session = 
 
 
 @router.get("/{order_id}/details")
-def get_order_details(order_id: int, db: Session = Depends(get_db)):
-    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+def get_order_details(order_id: int, db: Session = Depends(get_db), user_id : int = Depends(verify_access_token),):
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if not db.query(models.User).filter(models.User.id == user_id).first():
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    order = db.query(models.Order).filter(models.Order.customer_id == user_id, models.Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return {

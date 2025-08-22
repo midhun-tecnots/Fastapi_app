@@ -122,3 +122,5 @@ class OrderStatus(Base):
     created_by_id = Column(Integer, ForeignKey("users_user.id"))
 
     order = relationship("Order", back_populates="status_history")
+
+

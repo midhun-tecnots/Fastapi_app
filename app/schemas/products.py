@@ -13,7 +13,7 @@ class CategoryRead(CategoryBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ProductBase(BaseModel):
@@ -31,4 +31,4 @@ class ProductRead(ProductBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

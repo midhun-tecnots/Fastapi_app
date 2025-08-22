@@ -25,7 +25,10 @@ class UserRead(UserBase):
     
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
+class LoginModel(BaseModel):
+    username: str  
+    password: str
 

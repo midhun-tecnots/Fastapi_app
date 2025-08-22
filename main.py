@@ -4,7 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routers.users import router as users_router
 from app.api.v1.routers.products import router as products_router
 from app.api.v1.routers.orders import router as orders_router
+from app.core.security import create_access_token
 from app.graphql.schema import graphql_app
+
+from app.db import models
+from app.db.session import engine   
+
+models.Base.metadata.create_all(bind=engine)
 
 
 def create_app() -> FastAPI:
@@ -27,3 +33,6 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+print(create_access_token(1))
+

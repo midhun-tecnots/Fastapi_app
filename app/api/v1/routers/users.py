@@ -3,16 +3,18 @@ from sqlalchemy.orm import Session
 from typing import List
 import sqlite3
 
+from app.core.security import create_access_token
 from app.db.session import get_db
 from app.db import models
-from app.schemas.users import UserCreate, UserRead
+from app.schemas.users import LoginModel, UserCreate, UserRead
 
 router = APIRouter(prefix="/users")
 
 
 @router.post("/", response_model=UserRead, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    existing = db.execute(f"SELECT * FROM users_user WHERE username = '{user.username}'").first()
+    # existing = db.execute(f"SELECT * FROM users_user WHERE username = '{user.username}'").first()
+    existing  = db.query(models.User).filter(models.User.username == user.username).first()
     if existing:
         raise HTTPException(status_code=409, detail="Username already exists")
     
@@ -76,3 +78,32 @@ def search_users(query: str, db: Session = Depends(get_db)):
         models.User.username.like(f"%{query}%")
     ).all()
     return users
+
+@router.post("/login")
+def login(req : LoginModel, db: Session = Depends(get_db)):
+    try:
+        db_user = db.query(models.User).filter(
+            models.User.username == req.username
+        ).first()
+
+        if db_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        else:
+
+            if db_user.password != req.password:
+                raise HTTPException(status_code=401, detail="Invalid password")
+            else:
+                access_token = create_access_token(user_id=db_user.id)
+
+                return {
+                    "access_token": access_token,
+                    "token_type": "bearer",
+                    "user_id": db_user.id,
+                    "username": db_user.username,
+                    "email": db_user.email,
+                    "is_active": db_user.is_active,
+                    "is_customer": db_user.is_customer,
+                    "is_vendor": db_user.is_vendor
+                }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

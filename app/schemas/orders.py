@@ -25,11 +25,11 @@ class OrderRead(OrderBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class OrderItemRead(OrderItemBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

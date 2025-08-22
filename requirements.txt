@@ -1,6 +1,6 @@
 # FastAPI stack
 fastapi==0.115.2
-starlette==0.35.1
+starlette==0.37.2
 uvicorn[standard]==0.30.6
 
 # Data & ORM
@@ -10,7 +10,7 @@ alembic==1.13.2
 # Auth & Security
 python-jose==3.3.0
 passlib[bcrypt]==1.7.4
-bcrypt==3.1.7
+# bcrypt==3.1.7
 python-multipart==0.0.9
 
 # GraphQL
@@ -23,7 +23,7 @@ grpcio-tools==1.64.0
 
 # Misc
 httpx==0.24.1
-orjson==3.9.1
+# orjson==3.9.1
 redis==5.0.0
-psycopg2==2.8.6
+# psycopg2-binary==2.8.6
 pydantic==1.10.13
